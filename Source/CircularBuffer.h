@@ -17,39 +17,46 @@
 class CircularBuffer
 {
 public:
-    CircularBuffer() :
+    CircularBuffer(int nrOfChannels) :
+        m_nrOfChannels(nrOfChannels),
         m_writeIndex(0),
         m_readIndex(0),
         m_size(0),
         m_frac(0),
         m_offset(0)
     {
-        
+        for (int i{ 0 }; i < m_nrOfChannels; ++i)
+        {
+            std::vector<float> channelBuffer{};
+            m_buffer.push_back(channelBuffer);
+        }
     }
 
     void setSize(int size)
     {
         m_size = size;
-        m_buffer.resize(m_size);
-        std::fill(m_buffer.begin(), m_buffer.end(), 0);
+        
+        for (int i{ 0 }; i < m_nrOfChannels; ++i)
+        {
+            m_buffer[i].resize(m_size);
+            std::fill(m_buffer[i].begin(), m_buffer[i].end(), 0);
+        }
     }
 
-    void write(float sample)
+    void write(int channel, float sample)
     {
-        m_buffer[m_writeIndex] = sample;
+        m_buffer[channel][m_writeIndex] = sample;
         m_writeIndex = (m_writeIndex + 1) % m_size;
         m_readIndex = (m_writeIndex - m_offset + m_size) % m_size;
-
     }
 
-    float read()
+    float read(int channel)
     {
-        //float bSample1{ m_buffer[m_readIndex] };
-        //float bSample2{ m_buffer[(m_readIndex + 1) % m_size] };
+        //float bSample1{ m_buffer[channel] [m_readIndex] };
+        //float bSample2{ m_buffer[channel][(m_readIndex + 1) % m_size] };
         //float oSample1{ bSample1 * m_frac };
         //float oSample2{ bSample2 * (1 - m_frac) };
-        //return oSample1 + oSample2;
-        return m_buffer[m_readIndex];
+        return m_buffer[channel][m_readIndex];
     }
 
     void setDelay(float delayInSamples)
@@ -61,7 +68,8 @@ public:
     }
 
 private:
-    std::vector<float> m_buffer;
+    std::vector<std::vector<float>> m_buffer;
+    int m_nrOfChannels;
     int m_writeIndex;
     int m_readIndex;
     int m_size;

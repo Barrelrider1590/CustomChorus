@@ -21,7 +21,7 @@ CustomChorusAudioProcessor::CustomChorusAudioProcessor()
                      #endif
                        ),
     m_delayBufferSize(0),
-    m_delayBuffer(),
+    m_delayBuffer(getTotalNumOutputChannels()),
     m_delayInSamples(0)
 #endif
 {
@@ -147,8 +147,8 @@ void CustomChorusAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
         for (int i{ 0 }; i < buffer.getNumSamples(); ++i)
         {
             float bufferSample{ buffer.getSample(channel, i) };
-            m_delayBuffer.write(bufferSample);
-            float delaySample{ m_delayBuffer.read() };
+            m_delayBuffer.write(channel, bufferSample);
+            float delaySample{ m_delayBuffer.read(channel) };
             float delayedSample{ std::clamp(delaySample + bufferSample, -1.f, 1.f) };
             buffer.setSample(channel, i, delayedSample);
         }
