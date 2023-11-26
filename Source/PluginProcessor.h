@@ -14,6 +14,7 @@
 struct PluginSettings
 {
     int delayInSamples{ 0 };
+    float dry{ 0.0f }, wet{ 0.0f };
 };
 
 //==============================================================================

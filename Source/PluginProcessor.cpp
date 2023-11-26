@@ -144,8 +144,13 @@ void CustomChorusAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     juce::ScopedNoDenormals noDenormals;
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
+    
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
+
+    PluginSettings settings{ GetPluginSettings(m_apvts) };
+    float dry{ settings.dry };
+    float wet{ settings.wet };
 
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
@@ -154,12 +159,11 @@ void CustomChorusAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
             float bufferSample{ buffer.getSample(channel, i) };
             m_delayBuffer.write(channel, bufferSample);
             float delayedSample{ m_delayBuffer.read(channel) };
-            float wetDryMix{ std::clamp(delayedSample + bufferSample, -1.f, 1.f) }; // 50/50 wet/dry signal
+            float wetDryMix{ std::clamp((delayedSample * wet) + (bufferSample * dry), -1.f, 1.f) }; // 50/50 wet/dry signal
             buffer.setSample(channel, i, wetDryMix);
         }
     }
 
-    PluginSettings settings{ GetPluginSettings(m_apvts)};
     m_delayBuffer.setDelay(settings.delayInSamples);
 }
 
@@ -206,6 +210,8 @@ juce::AudioProcessorValueTreeState::ParameterLayout CustomChorusAudioProcessor::
     juce::AudioProcessorValueTreeState::ParameterLayout layout{};
 
     layout.add(std::make_unique<juce::AudioParameterInt>("delay", "Delay", 1, 48000, static_cast<int>(48000)));
+    layout.add(std::make_unique<juce::AudioParameterFloat>("dry", "Dry", 0.0f, 1.0f, 0.5f));
+    layout.add(std::make_unique<juce::AudioParameterFloat>("wet", "Wet", 0.0f, 1.0f, 0.5f));
 
     return layout;
 }
@@ -215,6 +221,8 @@ PluginSettings CustomChorusAudioProcessor::GetPluginSettings(const juce::AudioPr
     PluginSettings settings;
 
     settings.delayInSamples = apvts.getRawParameterValue("delay")->load();
+    settings.dry = apvts.getRawParameterValue("dry")->load();
+    settings.wet = apvts.getRawParameterValue("wet")->load();
 
     return settings;
 }
