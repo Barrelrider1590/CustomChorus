@@ -23,7 +23,7 @@ public:
         m_readIndex(0),
         m_size(0),
         m_frac(0),
-        m_offset(0)
+        m_delayInSamples(0)
     {
         for (int i{ 0 }; i < m_nrOfChannels; ++i)
         {
@@ -47,7 +47,7 @@ public:
     {
         m_buffer[channel][m_writeIndex] = sample;
         m_writeIndex = (m_writeIndex + 1) % m_size;
-        m_readIndex = (m_writeIndex - m_offset + m_size) % m_size;
+        m_readIndex = (m_writeIndex - m_delayInSamples + m_size) % m_size;
     }
 
     float read(int channel)
@@ -56,15 +56,16 @@ public:
         //float bSample2{ m_buffer[channel][(m_readIndex + 1) % m_size] };
         //float oSample1{ bSample1 * m_frac };
         //float oSample2{ bSample2 * (1 - m_frac) };
+        //return oSample1 + oSample2;
         return m_buffer[channel][m_readIndex];
     }
 
     void setDelay(float delayInSamples)
     {
         //float integerDelay{ 0 };
-        //m_frac = std::modf(delay, &integerDelay);
+        //m_frac = std::modf(delayInSamples, &integerDelay);
         //m_offset = m_size - (static_cast<int>(integerDelay) + 1);
-        m_offset = delayInSamples;
+        m_delayInSamples = delayInSamples;
     }
 
 private:
@@ -74,5 +75,5 @@ private:
     int m_readIndex;
     int m_size;
     int m_frac;
-    int m_offset;
+    int m_delayInSamples;
 };

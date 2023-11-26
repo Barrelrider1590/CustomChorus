@@ -11,6 +11,11 @@
 #include <JuceHeader.h>
 #include "CircularBuffer.h"
 
+struct PluginSettings
+{
+    int delayInSamples{ 0 };
+};
+
 //==============================================================================
 /**
 */
@@ -57,10 +62,18 @@ public:
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
+    //==============================================================================
+    juce::AudioProcessorValueTreeState* GetAPVTS();
+    juce::AudioProcessorValueTreeState::ParameterLayout CreateParameterLayout();
+    PluginSettings GetPluginSettings(const juce::AudioProcessorValueTreeState& apvts);
+
 private:
     CircularBuffer m_delayBuffer;
     int m_delayBufferSize;
     int m_delayInSamples;
+    int m_sampleRate;
+
+    juce::AudioProcessorValueTreeState m_apvts;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (CustomChorusAudioProcessor)

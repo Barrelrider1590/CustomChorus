@@ -22,7 +22,9 @@ CustomChorusAudioProcessor::CustomChorusAudioProcessor()
                        ),
     m_delayBufferSize(0),
     m_delayBuffer(getTotalNumOutputChannels()),
-    m_delayInSamples(0)
+    m_delayInSamples(0),
+    m_sampleRate(0),
+    m_apvts(*this, nullptr, "Parameters", CreateParameterLayout())
 #endif
 {
 }
@@ -96,8 +98,11 @@ void CustomChorusAudioProcessor::changeProgramName (int index, const juce::Strin
 //==============================================================================
 void CustomChorusAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    m_delayInSamples = sampleRate / 2;
-    m_delayBufferSize = sampleRate;
+    m_sampleRate = sampleRate;
+    PluginSettings settings{ GetPluginSettings(m_apvts) };
+
+    m_delayInSamples = settings.delayInSamples;
+    m_delayBufferSize = m_sampleRate;
     m_delayBuffer.setSize(m_delayBufferSize);
     m_delayBuffer.setDelay(m_delayInSamples);
 }
@@ -148,11 +153,14 @@ void CustomChorusAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
         {
             float bufferSample{ buffer.getSample(channel, i) };
             m_delayBuffer.write(channel, bufferSample);
-            float delaySample{ m_delayBuffer.read(channel) };
-            float delayedSample{ std::clamp(delaySample + bufferSample, -1.f, 1.f) };
-            buffer.setSample(channel, i, delayedSample);
+            float delayedSample{ m_delayBuffer.read(channel) };
+            float wetDryMix{ std::clamp(delayedSample + bufferSample, -1.f, 1.f) }; // 50/50 wet/dry signal
+            buffer.setSample(channel, i, wetDryMix);
         }
     }
+
+    PluginSettings settings{ GetPluginSettings(m_apvts)};
+    m_delayBuffer.setDelay(settings.delayInSamples);
 }
 
 //==============================================================================
@@ -163,7 +171,8 @@ bool CustomChorusAudioProcessor::hasEditor() const
 
 juce::AudioProcessorEditor* CustomChorusAudioProcessor::createEditor()
 {
-    return new CustomChorusAudioProcessorEditor (*this);
+    //return new CustomChorusAudioProcessorEditor (*this);
+    return new juce::GenericAudioProcessorEditor (*this);
 }
 
 //==============================================================================
@@ -185,4 +194,27 @@ void CustomChorusAudioProcessor::setStateInformation (const void* data, int size
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new CustomChorusAudioProcessor();
+}
+
+juce::AudioProcessorValueTreeState* CustomChorusAudioProcessor::GetAPVTS()
+{
+    return &m_apvts;
+}
+
+juce::AudioProcessorValueTreeState::ParameterLayout CustomChorusAudioProcessor::CreateParameterLayout()
+{
+    juce::AudioProcessorValueTreeState::ParameterLayout layout{};
+
+    layout.add(std::make_unique<juce::AudioParameterInt>("delay", "Delay", 1, 48000, static_cast<int>(48000)));
+
+    return layout;
+}
+
+PluginSettings CustomChorusAudioProcessor::GetPluginSettings(const juce::AudioProcessorValueTreeState& apvts)
+{
+    PluginSettings settings;
+
+    settings.delayInSamples = apvts.getRawParameterValue("delay")->load();
+
+    return settings;
 }
