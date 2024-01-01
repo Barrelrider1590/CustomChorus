@@ -24,8 +24,8 @@ CustomChorusAudioProcessor::CustomChorusAudioProcessor()
     m_delayBuffer(2, 2, 48000),
     m_delayInSamples(0),
     m_sampleRate(0),
-    m_lfoUpdateRate(2400),
-    m_lfoUpdateCounter(2400),
+    m_lfoUpdateRate(1),
+    m_lfoUpdateCounter(1),
     m_apvts(*this, nullptr, "Parameters", CreateParameterLayout())
 #endif
 {
