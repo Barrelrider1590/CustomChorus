@@ -17,9 +17,9 @@
 class CircularBuffer
 {
 public:
-    CircularBuffer(int nrofChannels, float maxDelayLength, int sampleRate) :
+    CircularBuffer(int nrofChannels, float maxDelayLengthSec, int sampleRate) :
         m_nrOfChannels(nrofChannels),
-        m_bufferMaxSize(maxDelayLength* sampleRate),
+        m_bufferMaxSize(maxDelayLengthSec * sampleRate),
         m_readPosition(m_bufferMaxSize)
     {
         m_channelBuffers.resize(m_nrOfChannels);
