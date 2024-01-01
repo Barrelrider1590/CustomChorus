@@ -101,8 +101,7 @@ void CustomChorusAudioProcessor::prepareToPlay (double sampleRate, int samplesPe
     m_sampleRate = sampleRate;
     PluginSettings settings{ GetPluginSettings(m_apvts) };
 
-    m_delayInSamples = settings.delayInSamples;
-    m_delayBuffer.SetDelayLength(m_delayInSamples);
+    m_delayBuffer.SetDelayLength(settings.delayInSamples);
 }
 
 void CustomChorusAudioProcessor::releaseResources()
@@ -207,7 +206,8 @@ juce::AudioProcessorValueTreeState::ParameterLayout CustomChorusAudioProcessor::
 {
     juce::AudioProcessorValueTreeState::ParameterLayout layout{};
 
-    layout.add(std::make_unique<juce::AudioParameterInt>("delay", "Delay", 1, 48000, static_cast<int>(48000)));
+    //layout.add(std::make_unique<juce::AudioParameterInt>("delay", "Delay", 1, 48000, static_cast<int>(48000)));
+    layout.add(std::make_unique<juce::AudioParameterFloat>("delaySec", "DelaySec", 0.0f, 2.0f, 0.5f));
     layout.add(std::make_unique<juce::AudioParameterFloat>("dry", "Dry", 0.0f, 1.0f, 0.5f));
     layout.add(std::make_unique<juce::AudioParameterFloat>("wet", "Wet", 0.0f, 1.0f, 0.5f));
 
@@ -218,7 +218,7 @@ PluginSettings CustomChorusAudioProcessor::GetPluginSettings(const juce::AudioPr
 {
     PluginSettings settings;
 
-    settings.delayInSamples = apvts.getRawParameterValue("delay")->load();
+    settings.delayInSamples = apvts.getRawParameterValue("delaySec")->load() * getSampleRate();
     settings.dry = apvts.getRawParameterValue("dry")->load();
     settings.wet = apvts.getRawParameterValue("wet")->load();
 
