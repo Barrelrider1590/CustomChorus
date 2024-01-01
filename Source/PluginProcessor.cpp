@@ -30,7 +30,7 @@ CustomChorusAudioProcessor::CustomChorusAudioProcessor()
 #endif
 {
     m_lfo.initialise([](float x) {return std::sinf(x); }, 128);
-    m_lfo.setFrequency(3.0f);
+    m_lfo.setFrequency(0.01f);
 }
 
 CustomChorusAudioProcessor::~CustomChorusAudioProcessor()
@@ -109,7 +109,7 @@ void CustomChorusAudioProcessor::prepareToPlay (double sampleRate, int samplesPe
 
     m_lfo.prepare({ spec.sampleRate / m_lfoUpdateRate, spec.maximumBlockSize, spec.numChannels });
 
-    m_delayBuffer.SetDelayLength(settings.delayInSamples);
+    m_delayBuffer.SetDelayLength(settings.delayInSeconds * sampleRate);
 }
 
 void CustomChorusAudioProcessor::releaseResources()
@@ -154,11 +154,14 @@ void CustomChorusAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
         buffer.clear(i, 0, buffer.getNumSamples());
 
     PluginSettings settings{ GetPluginSettings(m_apvts) };
+    m_lfo.setFrequency(settings.rate);
     float dry{ settings.dry };
     float wet{ settings.wet };
 
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
+        int counter{0};
+
         for (int i{ 0 }; i < buffer.getNumSamples(); ++i)
         {
             float bufferSample{ buffer.getSample(channel, i) };
@@ -167,19 +170,25 @@ void CustomChorusAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
             float wetDryMix{ std::clamp((delayedSample * wet) + (bufferSample * dry), -1.f, 1.f) };
             buffer.setSample(channel, i, wetDryMix);
 
-            m_lfoUpdateCounter--;
+            // LFO modulated delay
+            //m_lfoUpdateCounter = m_lfoUpdateRate;
+            float lfoOut{ m_lfo.processSample(0.0f) };
+            float maxDepth{ 0.5f + (settings.depth * 0.5f) };
+            float minDepth{ 0.5f - (settings.depth * 0.5f) };
+            float lfoDepth{ juce::jmap(lfoOut, -1.0f, 1.0f, minDepth + 0.001f, maxDepth) };
+            float delayInSamples = (settings.delayInSeconds * lfoDepth) * getSampleRate();
 
-            if (m_lfoUpdateCounter == 0)
-            {
-                m_lfoUpdateCounter = m_lfoUpdateRate;
-                auto lfoOut{ m_lfo.processSample(0.0f) };
-                auto lfoDepth{ juce::jmap(lfoOut, -1.0f, 1.0f, 0.25f, 0.75f) };
+            // No modulation
+            //float delayInSamples = settings.delayInSeconds * getSampleRate();
 
-                int delayInSamples = (settings.delayInSeconds * lfoDepth) * getSampleRate();
+            // Modulation per sample
+            //float delayInSamples = settings.delayInSeconds * getSampleRate();
+            //delayInSamples -= counter;
+            //counter++;
+            //counter = counter % static_cast<int>(buffer.getNumSamples() * .25);
 
-                m_delayBuffer.SetDelayLength(delayInSamples);
-                // IDEA: When updating delay, make jump of 1 sample untill new delay length is reached
-            }
+
+            m_delayBuffer.SetDelayLength(delayInSamples);
         }
     }
 }
@@ -228,6 +237,8 @@ juce::AudioProcessorValueTreeState::ParameterLayout CustomChorusAudioProcessor::
 
     //layout.add(std::make_unique<juce::AudioParameterInt>("delay", "Delay", 1, 48000, static_cast<int>(48000)));
     layout.add(std::make_unique<juce::AudioParameterFloat>("delaySec", "DelaySec", 0.15f, 0.35f, 0.20f));
+    layout.add(std::make_unique<juce::AudioParameterFloat>("rate", "Rate", 0.0f, 3.0f, 0.5f));
+    layout.add(std::make_unique<juce::AudioParameterFloat>("depth", "Depth", 0.0f, 1.0f, 0.5f));
     layout.add(std::make_unique<juce::AudioParameterFloat>("dry", "Dry", 0.0f, 1.0f, 0.5f));
     layout.add(std::make_unique<juce::AudioParameterFloat>("wet", "Wet", 0.0f, 1.0f, 0.5f));
 
@@ -239,7 +250,9 @@ PluginSettings CustomChorusAudioProcessor::GetPluginSettings(const juce::AudioPr
     PluginSettings settings;
 
     settings.delayInSeconds = apvts.getRawParameterValue("delaySec")->load();
-    settings.delayInSamples = apvts.getRawParameterValue("delaySec")->load() * getSampleRate();
+    //settings.delayInSamples = apvts.getRawParameterValue("delaySec")->load() * getSampleRate();
+    settings.rate = apvts.getRawParameterValue("rate")->load();
+    settings.depth = apvts.getRawParameterValue("depth")->load();
     settings.dry = apvts.getRawParameterValue("dry")->load();
     settings.wet = apvts.getRawParameterValue("wet")->load();
 
