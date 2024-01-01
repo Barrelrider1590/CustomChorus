@@ -21,7 +21,7 @@ CustomChorusAudioProcessor::CustomChorusAudioProcessor()
                      #endif
                        ),
     m_delayBufferSize(0),
-    m_delayBuffer(getTotalNumOutputChannels()),
+    m_delayBuffer(2, 2, 48000),
     m_delayInSamples(0),
     m_sampleRate(0),
     m_apvts(*this, nullptr, "Parameters", CreateParameterLayout())
@@ -102,9 +102,7 @@ void CustomChorusAudioProcessor::prepareToPlay (double sampleRate, int samplesPe
     PluginSettings settings{ GetPluginSettings(m_apvts) };
 
     m_delayInSamples = settings.delayInSamples;
-    m_delayBufferSize = m_sampleRate;
-    m_delayBuffer.setSize(m_delayBufferSize);
-    m_delayBuffer.setDelay(m_delayInSamples);
+    m_delayBuffer.SetDelayLength(m_delayInSamples);
 }
 
 void CustomChorusAudioProcessor::releaseResources()
@@ -142,11 +140,11 @@ bool CustomChorusAudioProcessor::isBusesLayoutSupported (const BusesLayout& layo
 void CustomChorusAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
     juce::ScopedNoDenormals noDenormals;
-    auto totalNumInputChannels  = getTotalNumInputChannels();
+    auto totalNumInputChannels = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
-    
+
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
-        buffer.clear (i, 0, buffer.getNumSamples());
+        buffer.clear(i, 0, buffer.getNumSamples());
 
     PluginSettings settings{ GetPluginSettings(m_apvts) };
     float dry{ settings.dry };
@@ -157,14 +155,14 @@ void CustomChorusAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
         for (int i{ 0 }; i < buffer.getNumSamples(); ++i)
         {
             float bufferSample{ buffer.getSample(channel, i) };
-            m_delayBuffer.write(channel, bufferSample);
-            float delayedSample{ m_delayBuffer.read(channel) };
-            float wetDryMix{ std::clamp((delayedSample * wet) + (bufferSample * dry), -1.f, 1.f) }; // 50/50 wet/dry signal
+            m_delayBuffer.Write(channel, bufferSample);
+            float delayedSample{ m_delayBuffer.Read(channel) };
+            float wetDryMix{ std::clamp((delayedSample * wet) + (bufferSample * dry), -1.f, 1.f) };
             buffer.setSample(channel, i, wetDryMix);
         }
     }
 
-    m_delayBuffer.setDelay(settings.delayInSamples);
+    m_delayBuffer.SetDelayLength(settings.delayInSamples);
 }
 
 //==============================================================================
