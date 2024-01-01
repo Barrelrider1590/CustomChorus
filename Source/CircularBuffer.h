@@ -20,7 +20,8 @@ public:
     CircularBuffer(int nrofChannels, float maxDelayLengthSec, int sampleRate) :
         m_nrOfChannels(nrofChannels),
         m_bufferMaxSize(maxDelayLengthSec * sampleRate),
-        m_readPosition(m_bufferMaxSize)
+        m_readPosition(m_bufferMaxSize),
+        m_fraction(0)
     {
         m_channelBuffers.resize(m_nrOfChannels);
 
@@ -34,10 +35,17 @@ public:
 
     void SetDelayLength(float delayInSamples)
     {
+        float integerDelay{ 0 };
+        m_fraction = std::modf(delayInSamples, &integerDelay);
+
         for (auto& buffer : m_channelBuffers)
         {
-            buffer.resize(delayInSamples);
-            m_readPosition = delayInSamples - 1;
+            buffer.resize(integerDelay);
+            m_readPosition = integerDelay-1;
+            if (m_readPosition == 0)
+            {
+                m_readPosition = 1;
+            }
         }
 
     }
@@ -50,6 +58,12 @@ public:
 
     float Read(int channel)
     {
+        //float bSample1{ m_channelBuffers[channel][m_readPosition] };
+        //float bSample2{ m_channelBuffers[channel][(m_readPosition - 1) % m_readPosition] };
+        //float oSample1{ bSample1 * m_fraction };
+        //float oSample2{ bSample2 * (1 - m_fraction) };
+        //return oSample1 + oSample2;
+
         return m_channelBuffers[channel][m_readPosition];
     }
 
@@ -58,4 +72,5 @@ private:
     int m_nrOfChannels;
     int m_bufferMaxSize;
     int m_readPosition;
+    float m_fraction;
 };
