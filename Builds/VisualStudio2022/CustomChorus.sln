@@ -10,9 +10,12 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CustomChorus - VST3", "CustomChorus_VST3.vcxproj", "{66676249-26A1-71FB-732B-7512277BD685}"
 	ProjectSection(ProjectDependencies) = postProject
 		{6B52B2A8-5D01-AD48-C341-2B141516C239} = {6B52B2A8-5D01-AD48-C341-2B141516C239}
+		{97A8AF2B-B3E1-3F5C-46CD-DBC662C0B30D} = {97A8AF2B-B3E1-3F5C-46CD-DBC662C0B30D}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CustomChorus - Shared Code", "CustomChorus_SharedCode.vcxproj", "{6B52B2A8-5D01-AD48-C341-2B141516C239}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CustomChorus - VST3 Manifest Helper", "CustomChorus_VST3ManifestHelper.vcxproj", "{97A8AF2B-B3E1-3F5C-46CD-DBC662C0B30D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -32,6 +35,10 @@ Global
 		{6B52B2A8-5D01-AD48-C341-2B141516C239}.Debug|x64.Build.0 = Debug|x64
 		{6B52B2A8-5D01-AD48-C341-2B141516C239}.Release|x64.ActiveCfg = Release|x64
 		{6B52B2A8-5D01-AD48-C341-2B141516C239}.Release|x64.Build.0 = Release|x64
+		{97A8AF2B-B3E1-3F5C-46CD-DBC662C0B30D}.Debug|x64.ActiveCfg = Debug|x64
+		{97A8AF2B-B3E1-3F5C-46CD-DBC662C0B30D}.Debug|x64.Build.0 = Debug|x64
+		{97A8AF2B-B3E1-3F5C-46CD-DBC662C0B30D}.Release|x64.ActiveCfg = Release|x64
+		{97A8AF2B-B3E1-3F5C-46CD-DBC662C0B30D}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
