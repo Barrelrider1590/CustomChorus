@@ -13,8 +13,9 @@
 
 struct PluginSettings
 {
+
     int delayInSamples{ 0 };
-    float dry{ 0.0f }, wet{ 0.0f };
+    float delayInSeconds{ 0.0f }, dry{ 0.0f }, wet{ 0.0f };
 };
 
 //==============================================================================
@@ -73,6 +74,10 @@ private:
     int m_delayBufferSize;
     int m_delayInSamples;
     int m_sampleRate;
+
+    juce::dsp::Oscillator<float> m_lfo;
+    int m_lfoUpdateCounter;
+    int m_lfoUpdateRate;
 
     juce::AudioProcessorValueTreeState m_apvts;
 
