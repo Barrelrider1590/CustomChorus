@@ -3168,6 +3168,9 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Source\ChorusVoice.h">
+      <Filter>CustomChorus\Source</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Source\PluginProcessor.h">
       <Filter>CustomChorus\Source</Filter>
     </ClInclude>

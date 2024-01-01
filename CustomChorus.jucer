@@ -4,6 +4,7 @@
               addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1">
   <MAINGROUP id="B1hzPv" name="CustomChorus">
     <GROUP id="{C35F438C-3535-C511-2728-7F881B4CAE1B}" name="Source">
+      <FILE id="tLyyKM" name="ChorusVoice.h" compile="0" resource="0" file="Source/ChorusVoice.h"/>
       <FILE id="pargd0" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
       <FILE id="doQMJV" name="PluginProcessor.h" compile="0" resource="0"
