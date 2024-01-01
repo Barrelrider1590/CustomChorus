@@ -17,63 +17,45 @@
 class CircularBuffer
 {
 public:
-    CircularBuffer(int nrOfChannels) :
-        m_nrOfChannels(nrOfChannels),
-        m_writeIndex(0),
-        m_readIndex(0),
-        m_size(0),
-        m_frac(0),
-        m_delayInSamples(0)
+    CircularBuffer(int nrofChannels, float maxDelayLength, int sampleRate) :
+        m_nrOfChannels(nrofChannels),
+        m_bufferMaxSize(maxDelayLength* sampleRate),
+        m_readPosition(m_bufferMaxSize)
     {
-        for (int i{ 0 }; i < m_nrOfChannels; ++i)
+        m_channelBuffers.resize(m_nrOfChannels);
+
+        for (auto& buffer : m_channelBuffers)
         {
-            std::vector<float> channelBuffer{};
-            m_buffer.push_back(channelBuffer);
+            buffer.reserve(m_bufferMaxSize);
+            buffer.resize(m_bufferMaxSize);
+            std::fill(buffer.begin(), buffer.end(), 0);
         }
     }
 
-    void setSize(int size)
+    void SetDelayLength(float delayInSamples)
     {
-        m_size = size;
-        
-        for (int i{ 0 }; i < m_nrOfChannels; ++i)
+        for (auto& buffer : m_channelBuffers)
         {
-            m_buffer[i].resize(m_size);
-            std::fill(m_buffer[i].begin(), m_buffer[i].end(), 0);
+            buffer.resize(delayInSamples);
+            m_readPosition = delayInSamples - 1;
         }
+
     }
 
-    void write(int channel, float sample)
+    void Write(int channel, float sample)
     {
-        m_buffer[channel][m_writeIndex] = sample;
-        m_writeIndex = (m_writeIndex + 1) % m_size;
-        m_readIndex = (m_writeIndex - m_delayInSamples + m_size) % m_size;
+        m_channelBuffers[channel].pop_back();
+        m_channelBuffers[channel].insert(m_channelBuffers[channel].begin(), sample);
     }
 
-    float read(int channel)
+    float Read(int channel)
     {
-        //float bSample1{ m_buffer[channel] [m_readIndex] };
-        //float bSample2{ m_buffer[channel][(m_readIndex + 1) % m_size] };
-        //float oSample1{ bSample1 * m_frac };
-        //float oSample2{ bSample2 * (1 - m_frac) };
-        //return oSample1 + oSample2;
-        return m_buffer[channel][m_readIndex];
-    }
-
-    void setDelay(float delayInSamples)
-    {
-        //float integerDelay{ 0 };
-        //m_frac = std::modf(delayInSamples, &integerDelay);
-        //m_offset = m_size - (static_cast<int>(integerDelay) + 1);
-        m_delayInSamples = delayInSamples;
+        return m_channelBuffers[channel][m_readPosition];
     }
 
 private:
-    std::vector<std::vector<float>> m_buffer;
+    std::vector<std::vector<float>> m_channelBuffers;
     int m_nrOfChannels;
-    int m_writeIndex;
-    int m_readIndex;
-    int m_size;
-    int m_frac;
-    int m_delayInSamples;
+    int m_bufferMaxSize;
+    int m_readPosition;
 };
