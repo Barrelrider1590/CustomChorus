@@ -147,7 +147,10 @@ void CustomChorusAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
         for (int i{ 0 }; i < buffer.getNumSamples(); ++i)
         {
             float bufferSample{ buffer.getSample(channel, i) };
-            m_chorusVoice.Update(channel, settings.delayInSeconds, getSampleRate() * 0.5, settings.depth);
+            m_chorusVoice.Update(channel, 
+                                 settings.delayInSeconds, 
+                                 getSampleRate(), 
+                                 settings.rate, settings.depth);
             m_chorusVoice.Write(channel, bufferSample);
             float delayedSample{ m_chorusVoice.Read(channel) };
             float wetDryMix{ std::clamp((delayedSample * settings.wet) + (bufferSample * settings.dry), -1.f, 1.f) };
