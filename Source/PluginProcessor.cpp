@@ -24,8 +24,8 @@ CustomChorusAudioProcessor::CustomChorusAudioProcessor()
     m_delayBuffer(2, 2, 48000),
     m_delayInSamples(0),
     m_sampleRate(0),
-    m_lfoUpdateRate(1),
-    m_lfoUpdateCounter(1),
+    m_lfoUpdateRate(100),
+    m_lfoUpdateCounter(100),
     m_apvts(*this, nullptr, "Parameters", CreateParameterLayout())
 #endif
 {
@@ -170,13 +170,19 @@ void CustomChorusAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
             float wetDryMix{ std::clamp((delayedSample * wet) + (bufferSample * dry), -1.f, 1.f) };
             buffer.setSample(channel, i, wetDryMix);
 
+            m_lfoUpdateCounter--;
             // LFO modulated delay
-            //m_lfoUpdateCounter = m_lfoUpdateRate;
-            float lfoOut{ m_lfo.processSample(0.0f) };
-            float maxDepth{ 0.5f + (settings.depth * 0.5f) };
-            float minDepth{ 0.5f - (settings.depth * 0.5f) };
-            float lfoDepth{ juce::jmap(lfoOut, -1.0f, 1.0f, minDepth + 0.001f, maxDepth) };
-            float delayInSamples = (settings.delayInSeconds * lfoDepth) * getSampleRate();
+            if (m_lfoUpdateCounter == 0)
+            {
+                m_lfoUpdateCounter = m_lfoUpdateRate;
+                float lfoOut{ m_lfo.processSample(0.0f) };
+                float maxDepth{ 0.5f + (settings.depth * 0.5f) };
+                float minDepth{ 0.5f - (settings.depth * 0.5f) };
+                float lfoDepth{ juce::jmap(lfoOut, -1.0f, 1.0f, minDepth + 0.001f, maxDepth) };
+                float delayInSamples = (settings.delayInSeconds * lfoDepth) * getSampleRate();
+                m_delayBuffer.SetDelayLength(delayInSamples);
+            }
+
 
             // No modulation
             //float delayInSamples = settings.delayInSeconds * getSampleRate();
@@ -188,7 +194,6 @@ void CustomChorusAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
             //counter = counter % static_cast<int>(buffer.getNumSamples() * .25);
 
 
-            m_delayBuffer.SetDelayLength(delayInSamples);
         }
     }
 }
