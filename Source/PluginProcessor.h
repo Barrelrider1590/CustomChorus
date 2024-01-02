@@ -9,7 +9,7 @@
 #pragma once
 
 #include <JuceHeader.h>
-#include "CircularBuffer.h"
+#include "ChorusVoice.h"
 
 struct PluginSettings
 {
@@ -72,16 +72,7 @@ public:
     PluginSettings GetPluginSettings(const juce::AudioProcessorValueTreeState& apvts);
 
 private:
-    CircularBuffer m_delayBuffer;
-    int m_delayBufferSize;
-    int m_delayInSamples;
-    int m_sampleRate;
-
-    juce::dsp::Oscillator<float> m_lfo;
-    int m_lfoUpdateCounter;
-    int m_lfoUpdateRate;
-
-    juce::AudioProcessorValueTreeState m_apvts;
+    ChorusVoice m_chorusVoice;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (CustomChorusAudioProcessor)
