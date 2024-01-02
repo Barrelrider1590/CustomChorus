@@ -37,10 +37,11 @@ public:
         m_smoothedSample.setCurrentAndTargetValue(0.0f);
     }
 
-    void Update(int channel, float delayInSeconds, float sampleRate, float depth)
+    void Update(int channel, float delayInSeconds, float sampleRate, float rate, float depth)
     {
         if (!m_smoothedSample.isSmoothing())
         {
+            m_lfo.setFrequency(rate);
             float lfoOut{ m_lfo.processSample(1.0f) };
             float maxDepth{ 0.5f + (depth * 0.5f) };
             float minDepth{ 0.5f - (depth * 0.5f) };
