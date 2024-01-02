@@ -40,8 +40,8 @@ public:
 
         for (auto& buffer : m_channelBuffers)
         {
-            buffer.resize(integerDelay);
-            m_readPosition = integerDelay-1;
+            //buffer.resize(integerDelay);
+            m_readPosition = integerDelay-2;
             if (m_readPosition == 0)
             {
                 m_readPosition = 1;
@@ -59,15 +59,27 @@ public:
     float Read(int channel)
     {
         //float bSample1{ m_channelBuffers[channel][m_readPosition] };
-        //float bSample2{ m_channelBuffers[channel][(m_readPosition - 1) % m_readPosition] };
+        //float bSample2{ m_channelBuffers[channel][(m_readPosition - 1)]};
         //float oSample1{ bSample1 * m_fraction };
         //float oSample2{ bSample2 * (1 - m_fraction) };
         //return oSample1 + oSample2;
 
-        return m_channelBuffers[channel][m_readPosition];
+        //float currentSample{ m_channelBuffers[channel][m_readPosition] };
+        float prevSample{ m_channelBuffers[channel][m_readPosition + 1] };
+        float nextSample{ m_channelBuffers[channel][m_readPosition - 1] };
+        float interpolatedSample{ interpolate(prevSample, nextSample, m_fraction) };
+        return interpolatedSample;
+
+        //return m_channelBuffers[channel][m_readPosition];
     }
 
 private:
+    float interpolate(float prevSample, float nextSample,  float fraction)
+    {
+        return (fraction * nextSample) + ((1.0f - fraction) * prevSample);
+    }
+
+
     std::vector<std::vector<float>> m_channelBuffers;
     int m_nrOfChannels;
     int m_bufferMaxSize;
