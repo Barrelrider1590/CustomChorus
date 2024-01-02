@@ -72,7 +72,9 @@ public:
     PluginSettings GetPluginSettings(const juce::AudioProcessorValueTreeState& apvts);
 
 private:
-    ChorusVoice m_chorusVoice;
+    CircularBuffer m_delayBuffer;
+
+    juce::AudioProcessorValueTreeState m_apvts;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (CustomChorusAudioProcessor)
