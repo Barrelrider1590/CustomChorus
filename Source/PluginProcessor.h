@@ -72,7 +72,7 @@ public:
     PluginSettings GetPluginSettings(const juce::AudioProcessorValueTreeState& apvts);
 
 private:
-    CircularBuffer m_delayBuffer;
+    ChorusVoice m_chorusVoice;
 
     juce::AudioProcessorValueTreeState m_apvts;
 
