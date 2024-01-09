@@ -73,7 +73,7 @@ public:
 
 private:
     ChorusVoice m_chorusVoice;
-    CircularBuffer m_delayLine;
+    std::vector<CircularBuffer> m_delayLines;
     juce::dsp::Oscillator<float> m_lfo;
 
     juce::AudioProcessorValueTreeState m_apvts;

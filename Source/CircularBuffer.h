@@ -17,7 +17,7 @@
 class CircularBuffer
 {
 public:
-    CircularBuffer(int nrofChannels, float maxDelayLengthSec, int sampleRate) :
+    CircularBuffer(float maxDelayLengthSec, int sampleRate) :
         m_buffer(),
         m_readPosition(sampleRate * maxDelayLengthSec),
         m_fraction(0)
@@ -29,7 +29,11 @@ public:
 
     void SetDelay( float delayInSamples)
     {
-        m_readPosition = std::floor(delayInSamples);
+        m_readPosition = std::floor(delayInSamples) - 1;
+        if (m_readPosition < 0)
+        {
+            m_readPosition = 0;
+        }
         m_fraction = delayInSamples - std::floor(delayInSamples);
         
         //if (m_fraction != 0) jassertfalse;

@@ -21,11 +21,15 @@ CustomChorusAudioProcessor::CustomChorusAudioProcessor()
                      #endif
                        ),
     m_chorusVoice(2, 2, 48000),
-    m_delayLine(getTotalNumOutputChannels(), 2, 48000),
     m_lfo([](float x) { return std::sinf(x); }, 128),
     m_apvts(*this, nullptr, "Parameters", CreateParameterLayout())
 #endif
 {
+    for (int i{}; i < 2; i++)
+    {
+        m_delayLines.push_back(CircularBuffer(2, 48000));
+    }
+
     m_lfo.setFrequency(0.05f);
 }
 
@@ -99,9 +103,14 @@ void CustomChorusAudioProcessor::changeProgramName (int index, const juce::Strin
 void CustomChorusAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     juce::dsp::ProcessSpec spec{ sampleRate, samplesPerBlock, getTotalNumOutputChannels() };
+    
     m_chorusVoice.Prepare(spec, sampleRate * 0.5);
-    m_delayLine.SetDelay(sampleRate * 2);
-    m_lfo.reset();
+    
+    for (auto& delayLine : m_delayLines)
+    {
+        delayLine.SetDelay(sampleRate * 2);
+
+    }
     m_lfo.prepare(spec);
 }
 
@@ -153,6 +162,7 @@ void CustomChorusAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     {
         for (int i{ 0 }; i < buffer.getNumSamples(); ++i)
         {
+#pragma ignore
             //float bufferSample{ buffer.getSample(channel, i) };
             //m_chorusVoice.Update(channel, 
             //                     settings.delayInSeconds, 
@@ -162,14 +172,15 @@ void CustomChorusAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
             //float delayedSample{ m_chorusVoice.Read(channel) };
             //float wetDryMix{ std::clamp((delayedSample * settings.wet) + (bufferSample * settings.dry), -1.f, 1.f) };
             //buffer.setSample(channel, i, wetDryMix);
+#pragma endregion
 
             float lfoOut{ m_lfo.processSample(0.0f) };
-            float mod{ juce::jmap(lfoOut, -1.0f, 1.0f, 0.0f, static_cast<float>(settings.delayInSeconds * getSampleRate()) * settings.depth ) };
+            float mod{ juce::jmap(lfoOut, -1.0f, 1.0f, 0.0001f, static_cast<float>(settings.delayInSeconds * getSampleRate()) * settings.depth ) };
 
             float bufferSample{ buffer.getSample(channel, i) };
-            m_delayLine.Write(bufferSample);
-            m_delayLine.SetDelay((settings.delayInSeconds * getSampleRate()));
-            float delayedSample{ m_delayLine.Read() };
+            m_delayLines[channel].Write(bufferSample);
+            m_delayLines[channel].SetDelay((settings.delayInSeconds * getSampleRate()) - mod);
+            float delayedSample{ m_delayLines[channel].Read()};
 
             float wetDryMix{ std::clamp((delayedSample * settings.wet) + (bufferSample * settings.dry), -1.f, 1.f) };
             buffer.setSample(channel, i, wetDryMix);
@@ -221,8 +232,8 @@ juce::AudioProcessorValueTreeState::ParameterLayout CustomChorusAudioProcessor::
 
     //layout.add(std::make_unique<juce::AudioParameterInt>("delay", "Delay", 1, 48000, static_cast<int>(48000)));
     layout.add(std::make_unique<juce::AudioParameterFloat>("delaySec", "Delay", 0.15f, 0.35f, 0.20f));
-    layout.add(std::make_unique<juce::AudioParameterFloat>("rate", "Rate", 0.0f, 3.0f, 3.0f));
-    layout.add(std::make_unique<juce::AudioParameterFloat>("depth", "Depth", 0.0f, 1.0f, 1.0f));
+    layout.add(std::make_unique<juce::AudioParameterFloat>("rate", "Rate", 0.0f, 3.0f, 0.15));
+    layout.add(std::make_unique<juce::AudioParameterFloat>("depth", "Depth", 0.0f, 1.0f, 0.25f));
     layout.add(std::make_unique<juce::AudioParameterFloat>("dry", "Dry", 0.0f, 1.0f, 0.0f));
     layout.add(std::make_unique<juce::AudioParameterFloat>("wet", "Wet", 0.0f, 1.0f, 1.0f));
 

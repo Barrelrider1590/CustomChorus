@@ -16,7 +16,7 @@ class ChorusVoice
 {
 public:
     ChorusVoice(int nrofChannels, float maxDelayLengthSec, int sampleRate) :
-        m_delayLine(nrofChannels, maxDelayLengthSec, sampleRate),
+        m_delayLine(maxDelayLengthSec, sampleRate),
         m_lfo([](float x) {return std::sinf(x); }, 128),
         m_smoothedSample(0.0f),
         m_smoothedDelay(0.0f),
