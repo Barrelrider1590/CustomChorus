@@ -20,7 +20,9 @@ public:
         m_LFO([](float x) { return std::sinf(x); }, 125),
         m_sampleRate(sampleRate)
     {
-        m_LFO.setFrequency(0.15f);
+        juce::Random rand{ juce::Random() };
+        m_offset = juce::jmap(rand.nextFloat(), 0.8f, 1.0f);
+        m_LFO.setFrequency(0.15f * m_offset);
     }
     void Prepare(const juce::dsp::ProcessSpec& spec, float delayInSeconds)
     {
@@ -30,7 +32,7 @@ public:
     }
     void SetFrequency(float newFrequency)
     {
-        m_LFO.setFrequency(newFrequency);
+        m_LFO.setFrequency(newFrequency * m_offset);
     }
     void Update(float delayInSeconds, float depth)
     {
@@ -55,6 +57,5 @@ private:
     juce::dsp::Oscillator<float> m_LFO;
 
     float m_sampleRate;
-
-
+    float m_offset;
 };
