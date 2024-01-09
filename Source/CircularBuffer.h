@@ -22,8 +22,8 @@ public:
         m_readPosition(sampleRate * maxDelayLengthSec),
         m_fraction(0)
     {
-        m_buffer.reserve(sampleRate * maxDelayLengthSec + 1);
-        m_buffer.resize(sampleRate * maxDelayLengthSec + 1);
+        m_buffer.reserve(sampleRate * maxDelayLengthSec + 2);
+        m_buffer.resize(sampleRate * maxDelayLengthSec + 2);
     }
 
     void SetDelay( float delayInSamples)
