@@ -13,8 +13,7 @@
 
 struct PluginSettings
 {
-
-    int delayInSamples{ 0 };
+    int voices{ 0 };
     float delayInSeconds{ 0.0f };
     float rate{ 0.0f }, depth{ 0.0f };
     float dry{ 0.0f }, wet{ 0.0f };
@@ -74,6 +73,8 @@ public:
 private:
 
     std::vector<ChorusVoice> m_chorusVoices;
+
+    std::vector<std::vector<ChorusVoice>> m_stereoChorus;
 
     juce::AudioProcessorValueTreeState m_apvts;
 
