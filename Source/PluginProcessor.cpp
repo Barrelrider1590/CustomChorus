@@ -21,7 +21,7 @@ CustomChorusAudioProcessor::CustomChorusAudioProcessor()
                      #endif
                        ),
     m_chorusVoice(2, 2, 48000),
-    m_lfo([](float x) { return std::sinf(x); }, 128),
+    m_LFOs(),
     m_apvts(*this, nullptr, "Parameters", CreateParameterLayout())
 #endif
 {
@@ -30,7 +30,11 @@ CustomChorusAudioProcessor::CustomChorusAudioProcessor()
         m_delayLines.push_back(CircularBuffer(0.35f, 48000));
     }
 
-    m_lfo.setFrequency(0.05f);
+    for (int i{}; i < 2; i++)
+    {
+        m_LFOs.push_back(juce::dsp::Oscillator<float>([](float x) { return std::sinf(x); }, 128));
+        m_LFOs[i].setFrequency(0.05f);
+    }
 }
 
 CustomChorusAudioProcessor::~CustomChorusAudioProcessor()
@@ -109,9 +113,11 @@ void CustomChorusAudioProcessor::prepareToPlay (double sampleRate, int samplesPe
     for (auto& delayLine : m_delayLines)
     {
         delayLine.SetDelay(sampleRate * 2);
-
     }
-    m_lfo.prepare(spec);
+    for (auto& lfo : m_LFOs)
+    {
+        lfo.prepare(spec);
+    }
 }
 
 void CustomChorusAudioProcessor::releaseResources()
@@ -156,10 +162,10 @@ void CustomChorusAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
         buffer.clear(i, 0, buffer.getNumSamples());
 
     PluginSettings settings{ GetPluginSettings(m_apvts) };
-    m_lfo.setFrequency(settings.rate);
 
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
+        m_LFOs[channel].setFrequency(settings.rate);
         for (int i{ 0 }; i < buffer.getNumSamples(); ++i)
         {
 #pragma ignore
@@ -174,7 +180,7 @@ void CustomChorusAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
             //buffer.setSample(channel, i, wetDryMix);
 #pragma endregion
 
-            float lfoOut{ m_lfo.processSample(0.0f) };
+            float lfoOut{ m_LFOs[channel].processSample(0.0f)};
             float lfoMin{ 0.5f - (0.5f * settings.depth) };
             float lfoMax{ 0.5f + (0.5f * settings.depth) };
             float mod{ juce::jmap(lfoOut, -1.0f, 1.0f, lfoMin, lfoMax) };
