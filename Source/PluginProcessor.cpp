@@ -10,6 +10,9 @@
 #include "PluginEditor.h"
 
 //==============================================================================
+const int CustomChorusAudioProcessor::MAX_VOICES = 4;
+const float CustomChorusAudioProcessor::MAX_DELAY_SECONDS = 0.35f;
+
 CustomChorusAudioProcessor::CustomChorusAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
      : AudioProcessor (BusesProperties()
@@ -23,16 +26,16 @@ CustomChorusAudioProcessor::CustomChorusAudioProcessor()
     m_apvts(*this, nullptr, "Parameters", CreateParameterLayout())
 #endif
 {
-    for (int i{ 0 }; i < 2; ++i)
+    for (int i{ 0 }; i < getTotalNumInputChannels(); ++i)
     {
         m_stereoChorus.push_back(std::vector<ChorusVoice>());
     }
 
     for (auto& channel : m_stereoChorus)
     {
-        for (int i{ 0 }; i < 4; ++i)
+        for (int i{ 0 }; i < MAX_VOICES; ++i)
         {
-            channel.push_back(ChorusVoice(0.35f, 48000));
+            channel.push_back(ChorusVoice(MAX_DELAY_SECONDS, 48000));
         }   
     }
 }
@@ -163,7 +166,7 @@ void CustomChorusAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
-        for (int i{ 0 }; i < 4; ++i)
+        for (int i{ 0 }; i < m_stereoChorus[channel].size(); ++i)
         {
             m_stereoChorus[channel][i].SetFrequency(settings.rate);
         }
@@ -228,11 +231,11 @@ juce::AudioProcessorValueTreeState::ParameterLayout CustomChorusAudioProcessor::
 {
     juce::AudioProcessorValueTreeState::ParameterLayout layout{};
 
-    layout.add(std::make_unique<juce::AudioParameterInt>("voices", "Nr. Of Voices", 0, 4, 1));
-    layout.add(std::make_unique<juce::AudioParameterFloat>("delaySec", "Delay", 0.15f, 0.35f, 0.20f));
+    layout.add(std::make_unique<juce::AudioParameterInt>("voices", "Nr. Of Voices", 0, MAX_VOICES, 1));
+    layout.add(std::make_unique<juce::AudioParameterFloat>("delaySec", "Delay", 0.15f, MAX_DELAY_SECONDS, 0.20f));
     layout.add(std::make_unique<juce::AudioParameterFloat>("rate", "Rate", 0.0f, 3.0f, 0.15));
     layout.add(std::make_unique<juce::AudioParameterFloat>("depth", "Depth", 0.0f, 1.0f, 0.25f));
-    layout.add(std::make_unique<juce::AudioParameterFloat>("dry", "Dry", 0.0f, 1.0f, 0.0f));
+    layout.add(std::make_unique<juce::AudioParameterFloat>("dry", "Dry", 0.0f, 1.0f, 1.0f));
     layout.add(std::make_unique<juce::AudioParameterFloat>("wet", "Wet", 0.0f, 1.0f, 1.0f));
 
     return layout;

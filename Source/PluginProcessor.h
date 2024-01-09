@@ -75,6 +75,9 @@ private:
 
     juce::AudioProcessorValueTreeState m_apvts;
 
+    static const int MAX_VOICES;
+    static const float MAX_DELAY_SECONDS;
+
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (CustomChorusAudioProcessor)
 };
