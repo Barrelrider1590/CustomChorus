@@ -72,9 +72,8 @@ public:
     PluginSettings GetPluginSettings(const juce::AudioProcessorValueTreeState& apvts);
 
 private:
-    ChorusVoice m_chorusVoice;
-    std::vector<CircularBuffer> m_delayLines;
-    std::vector<juce::dsp::Oscillator<float>> m_LFOs;
+
+    std::vector<ChorusVoice> m_chorusVoices;
 
     juce::AudioProcessorValueTreeState m_apvts;
 

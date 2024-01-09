@@ -15,67 +15,46 @@
 class ChorusVoice
 {
 public:
-    ChorusVoice(int nrofChannels, float maxDelayLengthSec, int sampleRate) :
-        m_delayLine(maxDelayLengthSec, sampleRate),
-        m_lfo([](float x) {return std::sinf(x); }, 128),
-        m_smoothedSample(0.0f),
-        m_smoothedDelay(0.0f),
-        m_currentSample(0.0f),
-        m_currentDelay(0.0f),
-        m_delayAltered(false)
+    ChorusVoice(float maxDelaySeconds, float sampleRate) :
+        m_delayLine(maxDelaySeconds, sampleRate),
+        m_LFO([](float x) { return std::sinf(x); }, 125),
+        m_sampleRate(sampleRate)
     {
-        m_lfo.setFrequency(0.15f);
+        m_LFO.setFrequency(0.15f);
     }
-    ~ChorusVoice() {}
-
-    //========================================================================
-    void Prepare(const juce::dsp::ProcessSpec& spec, float delayInSamples)
+    void Prepare(const juce::dsp::ProcessSpec& spec, float delayInSeconds)
     {
-        m_delayLine.SetDelay(delayInSamples);
-        m_lfo.prepare(spec);
-        m_smoothedSample.reset(spec.sampleRate, 0.000002);
-        m_smoothedSample.setCurrentAndTargetValue(0.0f);
+        m_LFO.prepare(spec);
+        m_sampleRate = spec.sampleRate;
+        m_delayLine.SetDelay(delayInSeconds * m_sampleRate);
     }
-
-    void Update(int channel, float delayInSeconds, float sampleRate, float rate, float depth)
+    void SetFrequency(float newFrequency)
     {
-        if (!m_smoothedSample.isSmoothing())
-        {
-            m_lfo.setFrequency(rate);
-            float lfoOut{ m_lfo.processSample(1.0f) };
-            float maxDepth{ 0.5f + (depth * 0.5f) };
-            float minDepth{ 0.5f - (depth * 0.5f) };
-            float lfoDepth{ juce::jmap(lfoOut, -1.0f, 1.0f, minDepth + 0.001f, maxDepth) };
-            float delayInSamples = (delayInSeconds * lfoDepth) * sampleRate;
-            m_smoothedSample.setCurrentAndTargetValue(m_delayLine.Read());
-            m_delayLine.SetDelay(delayInSamples);
-            m_smoothedSample.setTargetValue(m_delayLine.Read());
-        }
+        m_LFO.setFrequency(newFrequency);
     }
-
-    void Write(int channel, float bufferSample)
+    void Update(float delayInSeconds, float depth)
     {
-        m_delayLine.Write(bufferSample);
-        m_currentSample = m_delayLine.Read(); // breaks the process for some reason when removed
+        float lfoOut{ m_LFO.processSample(0.0f)};
+        float lfoMin{ 0.5f - (0.5f * depth) };
+        float lfoMax{ 0.5f + (0.5f * depth) };
+        float mod{ juce::jmap(lfoOut, -1.0f, 1.0f, lfoMin, lfoMax) };
+
+        m_delayLine.SetDelay(mod * (delayInSeconds * m_sampleRate));
     }
-
-    float Read(int channel)
+    void Write(float sample)
     {
-        if (m_smoothedSample.isSmoothing())
-        {
-            return m_smoothedSample.getNextValue();
-        }
+        m_delayLine.Write(sample);
+    }
+    float Read()
+    {
+        return m_delayLine.Read();
     }
 
 private:
     CircularBuffer m_delayLine;
-    juce::dsp::Oscillator<float> m_lfo;
-    juce::SmoothedValue<float> m_smoothedSample;
-    juce::SmoothedValue<float> m_smoothedDelay;
+    juce::dsp::Oscillator<float> m_LFO;
 
-    float m_currentSample;
+    float m_sampleRate;
 
-    float m_currentDelay;
 
-    bool m_delayAltered;
 };
