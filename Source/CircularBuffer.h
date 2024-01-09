@@ -18,84 +18,49 @@ class CircularBuffer
 {
 public:
     CircularBuffer(int nrofChannels, float maxDelayLengthSec, int sampleRate) :
-        m_nrOfChannels(nrofChannels),
-        m_bufferMaxSize(maxDelayLengthSec* sampleRate),
-        m_readPosition(m_bufferMaxSize),
-        m_sampleRate(sampleRate),
-        m_maxDelayLengthSec(maxDelayLengthSec),
-        m_fraction(0),
-        m_delayLength(0.0f)
+        m_buffer(),
+        m_readPosition(sampleRate * maxDelayLengthSec),
+        m_fraction(0)
     {
-        m_channelBuffers.resize(m_nrOfChannels);
+        m_buffer.reserve(sampleRate * maxDelayLengthSec);
+        m_buffer.resize(sampleRate * maxDelayLengthSec);
+        std::fill(m_buffer.begin(), m_buffer.end(), 0.0f);
+    }
 
-        for (auto& buffer : m_channelBuffers)
+    void SetDelay( float delayInSamples)
+    {
+        m_readPosition = std::floor(delayInSamples);
+        m_fraction = delayInSamples - std::floor(delayInSamples);
+        
+        //if (m_fraction != 0) jassertfalse;
+    }
+
+    void Write(float sample)
+    {
+        m_buffer.pop_back();
+        m_buffer.insert(m_buffer.begin(), sample);
+    }
+
+    float Read()
+    {
+        if (m_fraction == 0 || m_readPosition == 0)
         {
-            buffer.reserve(m_bufferMaxSize);
-            buffer.resize(m_bufferMaxSize);
-            std::fill(buffer.begin(), buffer.end(), 0);
+            return m_buffer[m_readPosition];
         }
-    }
-
-    void prepare(double sampleRate, float delayInSamples)
-    {
-        m_delayLength = delayInSamples;
-        if (m_sampleRate != sampleRate)
+        else
         {
-            m_sampleRate = sampleRate;
-            m_bufferMaxSize = m_maxDelayLengthSec * m_sampleRate;
-            for (auto& buffer : m_channelBuffers)
-            {
-                buffer.reserve(m_bufferMaxSize);
-                buffer.resize(m_bufferMaxSize);
-                std::fill(buffer.begin(), buffer.end(), 0);
-            }
+            float currentSample{ m_buffer[m_readPosition] };
+            float nextSample{ m_buffer[m_readPosition - 1] };
+            float fractionRemainder{ 1 - m_fraction };
+            float fractionalSample{ (currentSample * m_fraction) + (nextSample * fractionRemainder) };
+
+            return std::clamp(fractionalSample, -1.f, 1.f);
         }
-        SetDelayLength(m_delayLength);
-    }
-
-    void SetDelayLength(float delayInSamples)
-    {
-        m_fraction = std::modf(delayInSamples, &m_delayLength);
-
-        for (auto& buffer : m_channelBuffers)
-        {
-            //buffer.resize(integerDelay);
-            m_readPosition = m_delayLength - 2;
-            if (m_readPosition == 0)
-            {
-                m_readPosition = 1;
-            }
-        }
-
-    }
-
-    void Write(int channel, float sample)
-    {
-        m_channelBuffers[channel].pop_back();
-        m_channelBuffers[channel].insert(m_channelBuffers[channel].begin(), sample);
-    }
-    float Read(int channel)
-    {
-        float nextSample{ m_channelBuffers[channel][m_readPosition - 1] };
-        float currentSample{ m_channelBuffers[channel][m_readPosition] };
-        float lerpedSample{ interpolate(currentSample, nextSample, m_fraction) };
-        return lerpedSample;
     }
 
 private:
-
-    float interpolate(float prevSample, float nextSample, float fraction)
-    {
-        return (fraction * nextSample) + ((1.0f - fraction) * prevSample);
-    }
-
-    //=====================================================================
-    std::vector<std::vector<float>> m_channelBuffers;
-    int m_nrOfChannels;
-    int m_bufferMaxSize;
-    int m_readPosition;
-    float m_sampleRate;
-    float m_maxDelayLengthSec;
+    std::vector<float> m_buffer;
+    float m_readPosition;
     float m_fraction;
-    float m_delayLength;
+
 };

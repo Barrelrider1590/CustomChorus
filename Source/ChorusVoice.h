@@ -31,7 +31,7 @@ public:
     //========================================================================
     void Prepare(const juce::dsp::ProcessSpec& spec, float delayInSamples)
     {
-        m_delayLine.prepare(spec.sampleRate, delayInSamples);
+        m_delayLine.SetDelay(delayInSamples);
         m_lfo.prepare(spec);
         m_smoothedSample.reset(spec.sampleRate, 0.000002);
         m_smoothedSample.setCurrentAndTargetValue(0.0f);
@@ -47,16 +47,16 @@ public:
             float minDepth{ 0.5f - (depth * 0.5f) };
             float lfoDepth{ juce::jmap(lfoOut, -1.0f, 1.0f, minDepth + 0.001f, maxDepth) };
             float delayInSamples = (delayInSeconds * lfoDepth) * sampleRate;
-            m_smoothedSample.setCurrentAndTargetValue(m_delayLine.Read(channel));
-            m_delayLine.SetDelayLength(delayInSamples);
-            m_smoothedSample.setTargetValue(m_delayLine.Read(channel));
+            m_smoothedSample.setCurrentAndTargetValue(m_delayLine.Read());
+            m_delayLine.SetDelay(delayInSamples);
+            m_smoothedSample.setTargetValue(m_delayLine.Read());
         }
     }
 
     void Write(int channel, float bufferSample)
     {
-        m_delayLine.Write(channel, bufferSample);
-        m_currentSample = m_delayLine.Read(channel); // breaks the process for some reason when removed
+        m_delayLine.Write(bufferSample);
+        m_currentSample = m_delayLine.Read(); // breaks the process for some reason when removed
     }
 
     float Read(int channel)
