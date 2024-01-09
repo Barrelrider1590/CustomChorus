@@ -23,11 +23,6 @@ CustomChorusAudioProcessor::CustomChorusAudioProcessor()
     m_apvts(*this, nullptr, "Parameters", CreateParameterLayout())
 #endif
 {
-    for (int i{ 0 }; i < 4; i++)
-    {
-        m_chorusVoices.push_back(ChorusVoice(0.35f, 48000));
-    }
-
     for (int i{ 0 }; i < 2; ++i)
     {
         m_stereoChorus.push_back(std::vector<ChorusVoice>());
@@ -112,13 +107,7 @@ void CustomChorusAudioProcessor::changeProgramName (int index, const juce::Strin
 void CustomChorusAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     juce::dsp::ProcessSpec spec{ sampleRate, samplesPerBlock, getTotalNumOutputChannels() };
-
     PluginSettings settings{ GetPluginSettings(m_apvts) };
-
-    for (auto& chorusVoice : m_chorusVoices)
-    {
-        chorusVoice.Prepare(spec, settings.delayInSeconds);
-    }
 
     for (auto& channel : m_stereoChorus)
     {
@@ -174,27 +163,15 @@ void CustomChorusAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
-        m_chorusVoices[channel].SetFrequency(settings.rate);
-
         for (int i{ 0 }; i < 4; ++i)
         {
             m_stereoChorus[channel][i].SetFrequency(settings.rate);
         }
 
         for (int i{ 0 }; i < buffer.getNumSamples(); ++i)
-        {
-            //float bufferSample{ buffer.getSample(channel, i) };
-            //float delayedSample{};
-            //for (int i{ 0 }; i < 2; ++i)
-            //{
-            //    m_chorusVoices[i].Write(bufferSample);
-            //    m_chorusVoices[i].Update(settings.delayInSeconds, settings.depth);
-            //    delayedSample = m_chorusVoices[i].Read();
-            //}
-            //float wetDryMix{ std::clamp((delayedSample * settings.wet) + (bufferSample * settings.dry), -1.f, 1.f) };
-            //buffer.setSample(channel, i, wetDryMix);
-            
+        {            
             float bufferSample{ buffer.getSample(channel, i) };
+
             float delayedSample{};
             for (int i{ 0 }; i < settings.voices; ++i)
             {
@@ -202,9 +179,9 @@ void CustomChorusAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
                 m_stereoChorus[channel][i].Update(settings.delayInSeconds, settings.depth);
                 delayedSample = m_stereoChorus[channel][i].Read();
             }
+
             float wetDryMix{ std::clamp((delayedSample * settings.wet) + (bufferSample * settings.dry), -1.f, 1.f) };
             buffer.setSample(channel, i, wetDryMix);
-
         }
     }
 }

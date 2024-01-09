@@ -71,9 +71,6 @@ public:
     PluginSettings GetPluginSettings(const juce::AudioProcessorValueTreeState& apvts);
 
 private:
-
-    std::vector<ChorusVoice> m_chorusVoices;
-
     std::vector<std::vector<ChorusVoice>> m_stereoChorus;
 
     juce::AudioProcessorValueTreeState m_apvts;
