@@ -233,12 +233,12 @@ juce::AudioProcessorValueTreeState::ParameterLayout CustomChorusAudioProcessor::
 {
     juce::AudioProcessorValueTreeState::ParameterLayout layout{};
 
-    layout.add(std::make_unique<juce::AudioParameterInt>("voices", "Nr. Of Voices", 0, MAX_VOICES, 1));
+    layout.add(std::make_unique<juce::AudioParameterInt>("voices", "Nr. Of Voices", 1, MAX_VOICES, 2));
     layout.add(std::make_unique<juce::AudioParameterFloat>("delaySec", "Delay", 0.15f, MAX_DELAY_SECONDS, 0.20f));
     layout.add(std::make_unique<juce::AudioParameterFloat>("rate", "Rate", 0.0f, 3.0f, 0.15));
     layout.add(std::make_unique<juce::AudioParameterFloat>("depth", "Depth", 0.0f, 1.0f, 0.25f));
     layout.add(std::make_unique<juce::AudioParameterFloat>("dry", "Dry", 0.0f, 1.0f, 1.0f));
-    layout.add(std::make_unique<juce::AudioParameterFloat>("wet", "Wet", 0.0f, 1.0f, 1.0f));
+    layout.add(std::make_unique<juce::AudioParameterFloat>("wet", "Wet", 0.0f, 1.0f, 0.5f));
 
     return layout;
 }
