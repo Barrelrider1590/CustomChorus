@@ -619,6 +619,9 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Source\CustomLookAndFeel.cpp">
+      <Filter>CustomChorus\Source</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Source\PluginProcessor.cpp">
       <Filter>CustomChorus\Source</Filter>
     </ClCompile>
@@ -3168,16 +3171,19 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Source\CustomLookAndFeel.h">
+      <Filter>CustomChorus\Source</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Source\ChorusVoice.h">
+      <Filter>CustomChorus\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\CircularBuffer.h">
       <Filter>CustomChorus\Source</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\PluginProcessor.h">
       <Filter>CustomChorus\Source</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\PluginEditor.h">
-      <Filter>CustomChorus\Source</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\CircularBuffer.h">
       <Filter>CustomChorus\Source</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\..\..\JUCE\modules\juce_audio_basics\audio_play_head\juce_AudioPlayHead.h">

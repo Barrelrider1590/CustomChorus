@@ -4,7 +4,13 @@
               addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1">
   <MAINGROUP id="B1hzPv" name="CustomChorus">
     <GROUP id="{C35F438C-3535-C511-2728-7F881B4CAE1B}" name="Source">
+      <FILE id="msBf3F" name="CustomLookAndFeel.cpp" compile="1" resource="0"
+            file="Source/CustomLookAndFeel.cpp"/>
+      <FILE id="f0B5Sw" name="CustomLookAndFeel.h" compile="0" resource="0"
+            file="Source/CustomLookAndFeel.h"/>
       <FILE id="tLyyKM" name="ChorusVoice.h" compile="0" resource="0" file="Source/ChorusVoice.h"/>
+      <FILE id="SXHpxR" name="CircularBuffer.h" compile="0" resource="0"
+            file="Source/CircularBuffer.h"/>
       <FILE id="pargd0" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
       <FILE id="doQMJV" name="PluginProcessor.h" compile="0" resource="0"
@@ -12,8 +18,6 @@
       <FILE id="bat3do" name="PluginEditor.cpp" compile="1" resource="0"
             file="Source/PluginEditor.cpp"/>
       <FILE id="ZaUB2D" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
-      <FILE id="SXHpxR" name="CircularBuffer.h" compile="0" resource="0"
-            file="Source/CircularBuffer.h"/>
     </GROUP>
   </MAINGROUP>
   <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1" JUCE_VST3_CAN_REPLACE_VST2="0"/>
