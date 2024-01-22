@@ -197,8 +197,8 @@ bool CustomChorusAudioProcessor::hasEditor() const
 
 juce::AudioProcessorEditor* CustomChorusAudioProcessor::createEditor()
 {
-    //return new CustomChorusAudioProcessorEditor (*this);
-    return new juce::GenericAudioProcessorEditor (*this);
+    return new CustomChorusAudioProcessorEditor (*this);
+    //return new juce::GenericAudioProcessorEditor (*this);
 }
 
 //==============================================================================
