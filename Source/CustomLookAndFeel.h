@@ -11,7 +11,7 @@
 #pragma once
 #include <JuceHeader.h>
 
-class CustomLookAndFeel : juce::LookAndFeel_V4
+class CustomLookAndFeel : public juce::LookAndFeel_V4
 {
 public:
     CustomLookAndFeel(juce::Colour bgClr);
@@ -23,13 +23,16 @@ public:
         int width, int height,
         float sliderPos,
         float rotaryStartAngle, float rotaryEndAngle,
-        juce::Slider&);
+        juce::Slider& slider) override;
+    void drawLabel(juce::Graphics& g, juce::Label& l) override;
 
     //===============================================================
     const juce::Colour& GetBackgroundColour();
+    const juce::Colour& GetColourFromGradient(double position);
 
 private:
     juce::Colour const m_backgroundClr;
-
+    juce::PathStrokeType const m_strokeType;
+    juce::ColourGradient m_gradient;
 
 };
