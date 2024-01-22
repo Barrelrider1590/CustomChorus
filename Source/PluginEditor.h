@@ -10,6 +10,7 @@
 
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
+#include "CustomLookAndFeel.h"
 
 //==============================================================================
 /**
@@ -25,6 +26,9 @@ public:
     void resized() override;
 
 private:
+    CustomLookAndFeel m_lookAndFeel;
+
+
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
     CustomChorusAudioProcessor& audioProcessor;
