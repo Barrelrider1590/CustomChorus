@@ -10,7 +10,7 @@
 #include "PluginEditor.h"
 
 //==============================================================================
-const int CustomChorusAudioProcessor::MAX_VOICES = 4;
+const int CustomChorusAudioProcessor::MAX_VOICES = 16;
 const float CustomChorusAudioProcessor::MAX_DELAY_SECONDS = 0.35f;
 
 CustomChorusAudioProcessor::CustomChorusAudioProcessor()
