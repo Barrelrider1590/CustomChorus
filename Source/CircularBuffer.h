@@ -22,7 +22,6 @@ public:
         m_readPosition(sampleRate * maxDelayLengthSec),
         m_fraction(0)
     {
-        m_buffer.reserve(sampleRate * maxDelayLengthSec + 2);
         m_buffer.resize(sampleRate * maxDelayLengthSec + 2);
     }
 
@@ -35,7 +34,7 @@ public:
     void Write(float sample)
     {
         m_buffer.pop_back();
-        m_buffer.insert(m_buffer.begin(), sample);
+        m_buffer.push_front(sample);
     }
 
     float Read()
@@ -49,7 +48,7 @@ public:
     }
 
 private:
-    std::vector<float> m_buffer;
+    std::deque<float> m_buffer;
     int m_readPosition;
     float m_fraction;
 
